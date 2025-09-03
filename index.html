@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Гемофилия и дальтонизм — Х‑сцепленное наследование</title>
+<style>
+  :root{
+    --accent:#22c55e;           /* зелёный акцент */
+    --accent-dark:#16a34a;
+    --bg-dark:#0b1f14;          /* общий тёмный фон-за край страниц */
+    --glass: rgba(255,255,255,.8);
+
+    /* УКАЖИТЕ ИМЕНА ФОНОВ — положите картинки рядом с HTML-файлом */
+    --theory-bg:url('theory.jpg');  /* ← theory_image */
+    --tasks-bg:url('tasks.jpg');    /* ← tasks_image */
+    --test-bg:url('test.jpg');      /* ← test_image */
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;color:#0f172a;background:var(--bg-dark);}
+
+  /* ВАУ‑шапка */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:linear-gradient(90deg,#22c55e, #84cc16, #22c55e);
+    padding:10px 14px;box-shadow:0 8px 30px rgba(0,0,0,.25);
+  }
+  .brand{display:flex;align-items:center;gap:10px;color:#052e16}
+  .brand .logo{width:38px;height:38px;border-radius:12px;background:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(0,0,0,.2)}
+  .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.2px}
+
+  nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+  nav button{
+    appearance:none;border:0;border-radius:14px;padding:10px 16px;font-weight:700;cursor:pointer;
+    background:#fff;color:#065f46;display:flex;align-items:center;gap:8px;box-shadow:0 6px 18px rgba(0,0,0,.15);transition:.2s transform,.2s box-shadow
+  }
+  nav button.active{background:#065f46;color:#ecfdf5}
+  nav button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(0,0,0,.18)}
+
+  main{min-height:calc(100vh - 110px)}
+
+  /* Секции‑вкладки */
+  .tab{display:none;padding:28px 18px;background-size:cover;background-position:center;}
+  .tab.active{display:block}
+  /* эффект затемнения + стекло */
+  .backdrop{backdrop-filter:saturate(1.1) blur(1px);background:linear-gradient(rgba(255,255,255,.0), rgba(255,255,255,.0));}
+  .panel{max-width:1100px;margin:auto;background:var(--glass);border-radius:22px;padding:24px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .muted{opacity:.8}
+  .note{background:#ecfccb;border:1px dashed #84cc16;padding:10px 14px;border-radius:12px}
+  .rule{background:#fff7ed;border:1px solid #fdba74;padding:10px 14px;border-radius:12px}
+
+  h2{margin:6px 0 12px 0;font-size:28px}
+  h3{margin:18px 0 8px 0}
+  p{line-height:1.55}
+  ul{margin:8px 0 14px 22px}
+
+  /* карточки заданий */
+  .task{background:white;border-radius:18px;padding:14px 14px;margin:14px 0;border:1px solid #e2e8f0}
+  .task h4{margin:0 0 10px}
+  .btn{appearance:none;border:0;border-radius:14px;background:var(--accent);color:white;font-weight:800;padding:10px 16px;cursor:pointer;box-shadow:0 8px 20px rgba(34,197,94,.4);transition:.2s}
+  .btn:hover{background:var(--accent-dark)}
+  .btn-outline{background:white;color:#065f46;border:2px solid #065f46}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  input[type="text"], select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #cbd5e1}
+  .answers{display:none;margin-top:10px;padding:10px;border-radius:12px;background:#f0fdf4;border:1px solid #86efac}
+
+  /* квест‑таймер */
+  .timer{font-variant-numeric:tabular-nums;background:#111827;color:#ecfccb;display:inline-block;padding:8px 12px;border-radius:12px;font-weight:800}
+  .label{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#065f46}
+
+  /* фоны для вкладок */
+  #tab-theory{background-image:var(--theory-bg)}
+  #tab-tasks{background-image:var(--tasks-bg)}
+  #tab-test{background-image:var(--test-bg)}
+  #tab-home{background:linear-gradient(135deg,#f0fdf4,#e0f2fe)}
+
+  /* блокировка теста */
+  .locked{opacity:.55;pointer-events:none;filter:grayscale(.2)}
+  .badge{display:inline-block;background:#fde68a;color:#7c2d12;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid #f59e0b}
+
+  /* мелкие украшения */
+  .chip{display:inline-block;background:#d1fae5;color:#065f46;border-radius:999px;padding:4px 10px;font-weight:700;font-size:12px;margin-right:6px}
+  .center{display:flex;justify-content:center;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">🧬</div>
+      <h1>Гемофилия и дальтонизм — примеры Х‑сцепленного наследования</h1>
+    </div>
+    <nav aria-label="Навигация по вкладкам">
+      <button class="tab-btn active" data-tab="theory">😊 Теория</button>
+      <button class="tab-btn" data-tab="tasks">📋 Задания</button>
+      <button class="tab-btn" data-tab="test">⏱️ Тест</button>
+      <button class="tab-btn" data-tab="home">🏠 Домашнее задание</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Теория -->
+    <section id="tab-theory" class="tab active backdrop">
+      <div class="panel">
+        <h2>Теория</h2>
+        <div class="note">Эта страница использует ваш фоновый рисунок. Положите файл <b>theory.jpg</b> рядом с HTML.</div>
+        <article>
+          <p>🔹 <strong>Что значит «наследование, сцепленное с полом»?</strong></p>
+          <p>У человека есть 46 хромосом (23 пары). Среди них:</p>
+          <ul>
+            <li>22 пары — аутосомы (неполовые хромосомы),</li>
+            <li>1 пара — половые хромосомы: у женщин — <strong>XX</strong>, у мужчин — <strong>XY</strong>.</li>
+          </ul>
+          <p>Некоторые гены находятся в Х-хромосоме. Если этот ген повреждён (имеет мутацию), то болезнь наследуется по Х‑сцепленному типу.</p>
+          <p>Мужчины чаще болеют такими болезнями, потому что у них одна Х‑хромосома. Если она несёт дефектный ген, исправить его нечем (Y‑хромосома не содержит «запасного» варианта). У женщин — две Х‑хромосомы, поэтому здоровый ген может «прикрыть» дефектный.</p>
+
+          <hr />
+          <p>🔹 <strong>Гемофилия</strong></p>
+          <ul>
+            <li>Это наследственное заболевание крови.</li>
+            <li>При нём нарушено свёртывание крови: при порезах и травмах у больного может быть сильное и длительное кровотечение.</li>
+            <li>Ген гемофилии находится в Х‑хромосоме.</li>
+          </ul>
+          <p class="muted">👉 <strong>Кто болеет?</strong><br>Мужчины — если их единственная Х несёт ген гемофилии. Женщины — болеют крайне редко (если обе Х содержат дефект). Чаще всего они — носительницы (одна Х нормальная, другая с мутацией).</p>
+
+          <hr />
+          <p>🔹 <strong>Дальтонизм</strong></p>
+          <ul>
+            <li>Это нарушение зрения, при котором человек плохо различает определённые цвета (чаще всего — красный и зелёный).</li>
+            <li>Ген дальтонизма тоже расположен в Х‑хромосоме.</li>
+          </ul>
+          <p class="muted">👉 <strong>Кто болеет?</strong><br>Мужчины — если их единственная Х‑хромосома содержит ген дальтонизма. Женщины — очень редко, только если дефектные гены есть на обеих Х.</p>
+
+          <p>🔹 <strong>Схема наследования</strong> (на примере мужчины с болезнью и здоровой женщины‑носительницы): сын получает Х от матери и Y от отца; дочь получает одну Х от матери и одну Х от отца. Поэтому: сын наследует заболевание от матери (если её Х содержит дефект). Дочь может быть носительницей (если получит одну «больную» Х и одну здоровую).</p>
+
+          <p class="note">✨ История «Хромосомы судьба». Это — небольшая популярная заметка, которую можно почитать из любопытства. 👉 Ссылка: <a href="https://g.co/gemini/share/f6448e649ac9" target="_blank" rel="noopener">перейти к истории</a></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Задания -->
+    <section id="tab-tasks" class="tab backdrop">
+      <div class="panel">
+        <h2>Задания</h2>
+        <div class="note">Фон для этой вкладки — файл <b>tasks.jpg</b>.</div>
+        
+        <div class="task" id="t1">
+          <h4>Задание 1. Верно / неверно</h4>
+          <p class="muted">Отметьте ВЕРНО/НЕВЕРНО (после отправки появятся ответы).</p>
+          <div class="grid">
+            <div>1. Гемофилия и дальтонизм наследуются сцепленно с Х‑хромосомой.
+              <select data-a="ВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>2. Мужчины чаще болеют гемофилией и дальтонизмом, чем женщины.
+              <select data-a="ВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>3. Женщины никогда не могут быть носительницами генов гемофилии и дальтонизма.
+              <select data-a="НЕВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>4. Дальтонизм — это нарушение свёртываемости крови.
+              <select data-a="НЕВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>5. Если у женщины обе Х‑хромосомы несут ген дальтонизма, она будет дальтоником.
+              <select data-a="ВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>6. Сын наследует Х‑хромосому от отца.
+              <select data-a="НЕВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>7. Дочь всегда получает одну Х от матери и одну Х от отца.
+              <select data-a="ВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>8. Гемофилия связана с нарушением различения цветов.
+              <select data-a="НЕВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>9. Носительница гена гемофилии может передать его сыну.
+              <select data-a="ВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+            <div>10. Женщина может быть носительницей, даже если внешне здорова.
+              <select data-a="ВЕРНО"><option value="">—</option><option>ВЕРНО</option><option>НЕВЕРНО</option></select>
+            </div>
+          </div>
+          <div class="center" style="margin-top:10px;gap:10px">
+            <button class="btn" onclick="checkTF()">Проверить</button>
+            <span id="tf-score" class="chip"></span>
+          </div>
+          <div id="tf-answers" class="answers"></div>
+        </div>
+
+        <div class="task" id="t2">
+          <h4>Задание 2. Сопоставь генотип родителя и исход</h4>
+          <div class="grid">
+            <div>A. XᴴXʰ × XᴴY — мама носительница гемофилии, папа здоров
+              <select data-a="1"><option value="">— выберите 1–4 —</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+            </div>
+            <div>B. XᴰX × XᴰY — мама здорова, папа дальтоник
+              <select data-a="3"><option value="">— выберите 1–4 —</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+            </div>
+            <div>C. XᴰXʰ × XᴴY — мама носительница обоих признаков на разных Х, папа здоров
+              <select data-a="2"><option value="">— выберите 1–4 —</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+            </div>
+            <div>D. XᴰʰX × XᴰY — у мамы оба мутантных аллеля на одной Х; папа дальтоник
+              <select data-a="4"><option value="">— выберите 1–4 —</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+            </div>
+          </div>
+          <div class="muted" style="margin-top:8px">
+            Исходы: 1) сыновья: 50% гемофилия; дочери: 50% носительницы гемофилии. 2) все дочери — дальтоники‑носительницы; сыновья: 50% дальтоники. 3) дочери: 50% носительницы дальтонизма; сыновья: 50% дальтоники; гемофилии нет. 4) возможны сыновья с гемофилией, дальтонизмом и обеими сразу; часть дочерей — носительницы одного или обоих признаков.
+          </div>
+          <div class="center" style="margin-top:10px;gap:10px">
+            <button class="btn" onclick="checkMatch()">Проверить</button>
+            <span id="m-score" class="chip"></span>
+          </div>
+          <div id="m-answers" class="answers"></div>
+        </div>
+
+        <div class="task" id="t3">
+          <h4>Задание 3. Решите задачу</h4>
+          <p>Женщина имеет сцепленные мутации на одной Х‑хромосоме (<strong>XʰᵈX</strong>) — носительница гемофилии и дальтонизма. Мужчина — дальтоник (<strong>XᵈY</strong>).</p>
+          <ol>
+            <li>Какие варианты генотипов могут быть у дочерей?</li>
+            <li>Какие варианты генотипов могут быть у сыновей?</li>
+            <li>Определите вероятности: здоровый ребёнок; только гемофилия; только дальтонизм; обе болезни.</li>
+          </ol>
+          <textarea id="open-solve" rows="6" style="width:100%;border-radius:12px;border:1px solid #cbd5e1;padding:10px"></textarea>
+          <div class="center" style="margin-top:10px">
+            <button class="btn btn-outline" onclick="toggleOpenAnswer()">Показать возможный разбор</button>
+          </div>
+          <div id="open-answer" class="answers">
+            <strong>Возможный разбор:</strong><br>
+            Мама даёт гаметы Xʰᵈ и X; папа — Xᵈ и Y. Комбинации: дочери: XʰᵈXᵈ (дальтоники‑носительницы гемофилии) или XXᵈ (носительницы дальтонизма); сыновья: XʰᵈY (оба признака) или XY (здоров). Вероятности: здоровый ребёнок — 25%; только гемофилия — 0%; только дальтонизм — 50% (25% дочь‑носительница дальтонизма + 25% сын‑дальтоник? <em>замечание</em>: у дочери фенотип дальтонизм проявится только при XᵈXᵈ, здесь её нет); обе болезни — 25% (сын XʰᵈY).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Тест -->
+    <section id="tab-test" class="tab backdrop">
+      <div class="panel" id="test-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <h2>Тест</h2>
+          <div><span class="label">Таймер</span> <span id="timer" class="timer">03:00</span></div>
+        </div>
+        <div class="rule" style="margin-bottom:10px">
+          ⚠ Правило: тест можно пройти <strong>только один раз</strong>. Время — <strong>3 минуты</strong>. Перезагрузка или переход на другие вкладки <strong>блокируют попытку</strong>.
+        </div>
+
+        <div id="starter">
+          <div class="grid">
+            <div>
+              <label class="label" for="student-name">Имя</label>
+              <input id="student-name" type="text" placeholder="Введите имя" />
+            </div>
+            <div>
+              <label class="label">Выберите вариант</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <label><input type="radio" name="variant" value="1"> Вариант 1</label>
+                <label><input type="radio" name="variant" value="2"> Вариант 2</label>
+              </div>
+            </div>
+          </div>
+          <div class="center" style="margin-top:12px">
+            <button class="btn" id="start-btn">Начать тест</button>
+          </div>
+        </div>
+
+        <form id="test-form" style="display:none">
+          <ol id="questions"></ol>
+          <div class="center" style="margin-top:12px">
+            <button type="button" class="btn" id="finish-btn">Завершить и получить результат</button>
+            <span id="test-score" class="chip"></span>
+            <span id="locked-badge" class="badge" style="display:none">Попытка заблокирована</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Домашнее задание -->
+    <section id="tab-home" class="tab">
+      <div class="panel">
+        <h2>Домашнее задание</h2>
+        <p><strong>У женщины:</strong> XᴴXʰ (здоровая носительница гемофилии). <strong>Мужчина:</strong> XᴴY (здоров).</p>
+        <ul>
+          <li>Составьте решётку Пеннета.</li>
+          <li>Определите вероятность: здоровые сыновья; сыновья с гемофилией; здоровые дочери; дочери‑носительницы.</li>
+          <li>Объясните, почему у дочери с XᴴXʰ болезнь не проявляется, а у сына с XʰY проявляется.</li>
+        </ul>
+        <div class="task">
+          <h4>Черновик (впишите ответы)</h4>
+          <div class="grid">
+            <div>
+              <label class="label">Вероятность здоровых сыновей</label>
+              <input type="text" placeholder="например, 50%" />
+            </div>
+            <div>
+              <label class="label">Вероятность сыновей с гемофилией</label>
+              <input type="text" placeholder="например, 50%" />
+            </div>
+            <div>
+              <label class="label">Вероятность здоровых дочерей</label>
+              <input type="text" placeholder="например, 50%" />
+            </div>
+            <div>
+              <label class="label">Вероятность дочерей‑носительниц</label>
+              <input type="text" placeholder="например, 50%" />
+            </div>
+          </div>
+          <details style="margin-top:10px">
+            <summary><strong>Показать подсказку/решение</strong></summary>
+            Материнские гаметы: Xᴴ и Xʰ; отцовские гаметы: Xᴴ и Y. Таблица:
+            <ul>
+              <li>Дочери: XᴴXᴴ (здоровая) — 25%; XᴴXʰ (носительница) — 25%.</li>
+              <li>Сыновья: XᴴY (здоров) — 25%; XʰY (гемофилия) — 25%.</li>
+            </ul>
+            Итого: здоровые сыновья — 50% из всех сыновей; сыновья с гемофилией — 50% из сыновей; здоровые дочери — 50% из дочерей; дочери‑носительницы — 50% из дочерей.
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+<script>
+// ===================== Навигация =====================
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabs = {
+  theory: document.getElementById('tab-theory'),
+  tasks: document.getElementById('tab-tasks'),
+  test: document.getElementById('tab-test'),
+  home: document.getElementById('tab-home')
+};
+
+let started = false;           // тест начат
+let locked = false;            // блокировка попытки
+let timerId = null;            // id таймера
+let timeLeft = 180;            // 3 минуты в секундах
+
+const LS_LOCK = 'xlinked_test_locked';
+const LS_STARTED = 'xlinked_test_started';
+
+function showTab(name){
+  document.querySelector('button.active')?.classList.remove('active');
+  document.querySelector('.tab.active')?.classList.remove('active');
+  document.querySelector(`button[data-tab="${name}"]`).classList.add('active');
+  tabs[name].classList.add('active');
+
+  // если пользователь ушёл со вкладки тест в процессе — навсегда блокируем
+  if(started && !locked && name !== 'test'){
+    permanentlyLock('Переход на другую вкладку — попытка засчитана.');
+  }
+}
+
+for(const b of tabButtons){
+  b.addEventListener('click', ()=> showTab(b.dataset.tab));
+}
+
+// ===================== ТЕОРИЯ/ЗАДАНИЯ: проверки =====================
+function checkTF(){
+  const selects = document.querySelectorAll('#t1 select');
+  let done = 0, ok = 0; let out = [];
+  selects.forEach((s,i)=>{ if(s.value) done++; if(s.value===s.dataset.a) ok++; out.push(`${i+1}) верно: <b>${s.dataset.a}</b>, ваш ответ: <b>${s.value||'—'}</b>`); });
+  if(done < selects.length){ alert('Заполните все пункты.'); return; }
+  document.getElementById('tf-score').textContent = `Результат: ${ok}/${selects.length}`;
+  const box = document.getElementById('tf-answers');
+  box.innerHTML = out.join('<br>');
+  box.style.display = 'block';
+}
+
+function checkMatch(){
+  const selects = document.querySelectorAll('#t2 select');
+  let done = 0, ok = 0; let out = [];
+  selects.forEach((s,idx)=>{ if(s.value) done++; if(s.value===s.dataset.a) ok++; out.push(`${String.fromCharCode(65+idx)} → <b>${s.dataset.a}</b>, ваш ответ: <b>${s.value||'—'}</b>`); });
+  if(done < selects.length){ alert('Заполните все соответствия.'); return; }
+  document.getElementById('m-score').textContent = `Результат: ${ok}/${selects.length}`;
+  const box = document.getElementById('m-answers');
+  box.innerHTML = out.join('<br>');
+  box.style.display = 'block';
+}
+
+function toggleOpenAnswer(){
+  const box = document.getElementById('open-answer');
+  box.style.display = box.style.display==='block' ? 'none':'block';
+}
+
+// ===================== ТЕСТ =====================
+const V1 = [
+  ['Где расположен ген гемофилии?',['Y‑хромосоме','аутосомах','Х‑хромосоме','митохондриях'],2],
+  ['Почему мужчины чаще болеют Х‑сцепленными болезнями?',['У них две Х‑хромосомы','Только одна Х‑хромосома','Нет Y‑хромосомы','Больше мутаций'],1],
+  ['Что означает термин «носительница»?',['Женщина с обеими мутантными Х','Здорова, но имеет один мутантный ген','Мужчина с мутантным геном','Женщина с Y‑хромосомой'],1],
+  ['Какое заболевание связано с нарушением свёртываемости крови?',['Дальтонизм','Альбинизм','Гемофилия','Близорукость'],2],
+  ['Как наследуется дальтонизм?',['Аутосомно‑доминантно','Х‑сцепленно рецессивно','Аутосомно‑рецессивно','Y‑сцепленно'],1],
+  ['Какую Х‑хромосому сын получает?',['От отца','От матери','От обоих','Формируется случайно'],1],
+  ['Какую Х‑хромосому дочь получает?',['Только от матери','Только от отца','От обоих родителей','От матери дважды'],2],
+  ['Может ли женщина болеть гемофилией?',['Нет, никогда','Только если обе Х мутантны','Только если отец болен','Только если мать носительница'],1],
+  ['Какой тип наследования характерен для гемофилии?',['Аутосомно‑доминантный','Х‑сцепленный рецессивный','Аутосомно‑рецессивный','Митохондриальный'],1],
+  ['Какое из утверждений верное?',['Сын наследует Y от матери','Дочь получает X от отца и X от матери','Носительница всегда болеет','Дальтонизм только по отцовской линии'],1]
+];
+
+const V2 = [
+  ['Что нарушено при дальтонизме?',['Слух','Цветовое зрение','Обоняние','Свёртывание крови'],1],
+  ['Что нарушено при гемофилии?',['Цветовое зрение','Слух','Свёртывание крови','Рост клеток'],2],
+  ['Почему женщина‑носительница здорова?',['Нет Y‑хромосомы','Нормальный ген компенсирует дефектный','Мутации только от отца','Всегда доминантный ген'],1],
+  ['Как обозначается нормальная Х‑хромосома?',['Xʰ','Xᴴ','Y','Xᴰ'],1],
+  ['Как наследуется ген дальтонизма?',['Только от отца к сыну','Только от матери к дочери','По Х‑сцепленному типу','По аутосомному типу'],2],
+  ['Какой пол чаще страдает Х‑сцепленными болезнями?',['Женщины','Мужчины','Оба одинаково','Зависит от случая'],1],
+  ['Кто может быть носителем X‑сцепленных болезней?',['Мужчины','Женщины','И мужчины, и женщины','Никто'],2],
+  ['Если отец дальтоник, а мать здорова, какими будут сыновья?',['Все дальтоники','Все здоровы','Половина дальтоники','Все носители'],1],
+  ['Если мать носительница гемофилии, а отец здоров, какие дочери возможны?',['Все здоровы','Все носительницы','Половина здоровы, половина носительницы','Все больны'],2],
+  ['Почему женщина с одной мутантной Х‑хромосомой здорова?',['Мутантный ген доминантный','Вторая Х может быть нормальной','Нет Y‑хромосомы','Всегда две одинаковые Х'],1]
+];
+
+const questionsEl = document.getElementById('questions');
+const timerEl = document.getElementById('timer');
+const starterEl = document.getElementById('starter');
+const formEl = document.getElementById('test-form');
+const startBtn = document.getElementById('start-btn');
+const finishBtn = document.getElementById('finish-btn');
+const testPanel = document.getElementById('test-panel');
+const lockedBadge = document.getElementById('locked-badge');
+
+function populate(variant){
+  questionsEl.innerHTML='';
+  const src = variant===1 ? V1 : V2;
+  src.forEach((q,idx)=>{
+    const li = document.createElement('li');
+    const name = `q${idx}`;
+    li.innerHTML = `<div style="margin:6px 0 8px 0"><b>${q[0]}</b></div>` + q[1]
+      .map((opt,i)=>`<label style="display:block;margin:.5em 0"><input type="radio" name="${name}" value="${i}"> ${'АБВГ'[i]}) ${opt}</label>`)
+      .join('');
+    questionsEl.appendChild(li);
+  });
+}
+
+function updateTimer(){
+  const m = String(Math.floor(timeLeft/60)).padStart(2,'0');
+  const s = String(timeLeft%60).padStart(2,'0');
+  timerEl.textContent = `${m}:${s}`;
+}
+
+function tick(){
+  if(timeLeft<=0){ finish(true); return; }
+  timeLeft--; updateTimer();
+}
+
+function startTest(){
+  const name = document.getElementById('student-name').value.trim();
+  const v = Number((document.querySelector('input[name="variant"]:checked')||{}).value);
+  if(!name){ alert('Введите имя.'); return; }
+  if(!v){ alert('Выберите вариант.'); return; }
+  if(localStorage.getItem(LS_LOCK)==='1'){ return lockUI('Попытка ранее заблокирована.'); }
+
+  // генерируем вопросы
+  populate(v);
+  // старт таймера
+  timeLeft = 180; updateTimer();
+  timerId = setInterval(tick,1000);
+
+  // показываем форму
+  starterEl.style.display='none';
+  formEl.style.display='block';
+  started = true;
+  localStorage.setItem(LS_STARTED,'1');
+
+  // После старта нельзя менять вариант/имя
+  document.querySelectorAll('input[name="variant"]').forEach(r=>r.disabled=true);
+  document.getElementById('student-name').disabled = true;
+}
+
+function scoreCurrent(){
+  const v = localStorage.getItem('variant') || (document.querySelector('input[name="variant"]:checked')||{}).value;
+  const src = Number(v)===1 ? V1 : V2;
+  let ok=0, total=src.length;
+  src.forEach((q,idx)=>{
+    const chosen = document.querySelector(`input[name="q${idx}"]:checked`);
+    if(chosen && Number(chosen.value)===q[2]) ok++;
+  });
+  return {ok,total};
+}
+
+function finish(auto=false){
+  if(timerId){ clearInterval(timerId); timerId=null; }
+  // блокируем элементы
+  formEl.querySelectorAll('input[type="radio"]').forEach(i=>i.disabled=true);
+  finishBtn.disabled = true;
+  started=false;
+  permanentlyLock(auto? 'Время вышло — попытка завершена.': 'Попытка завершена.');
+  const {ok,total}=scoreCurrent();
+  document.getElementById('test-score').textContent = `Баллы: ${ok}/${total}`;
+}
+
+function permanentlyLock(reason){
+  locked = true; localStorage.setItem(LS_LOCK,'1');
+  lockUI(reason);
+}
+
+function lockUI(reason){
+  testPanel.classList.add('locked');
+  lockedBadge.style.display='inline-block';
+  lockedBadge.textContent = 'Блокировка: ' + reason;
+}
+
+startBtn.addEventListener('click',()=>{
+  const v = (document.querySelector('input[name="variant"]:checked')||{}).value;
+  localStorage.setItem('variant', v||'');
+  startTest();
+});
+finishBtn.addEventListener('click',()=>finish(false));
+
+// блокировать при уходе со страницы или перезагрузке, если тест начат
+window.addEventListener('beforeunload', (e)=>{
+  if(started && !locked){ localStorage.setItem(LS_LOCK,'1'); }
+});
+
+// при загрузке — если есть блокировка, заблокировать UI
+window.addEventListener('load',()=>{
+  if(localStorage.getItem(LS_LOCK)==='1'){
+    lockUI('Попытка ранее заблокирована.');
+    starterEl.style.display='none';
+    formEl.style.display='none';
+  }
+});
+</script>
+</body>
+</html>
